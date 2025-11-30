@@ -24,5 +24,3 @@ actual fun CurrencyAmount.formatted(
   }
   return currencyFormat.format(roundedNumber.value)
 }
-
-actual fun Decimal.isValidAsCurrencyAmount() = isValidAsCurrencyAmountCommon()

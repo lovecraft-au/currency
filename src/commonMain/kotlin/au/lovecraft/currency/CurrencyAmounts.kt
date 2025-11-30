@@ -7,10 +7,6 @@ expect fun CurrencyAmount.formatted(
     roundedToDollars: Boolean = false
 ): String
 
-internal expect fun Decimal.isValidAsCurrencyAmount(): Boolean
-
-internal fun Decimal.isValidAsCurrencyAmountCommon() = !isNegative()
-
 fun CurrencyAmount.formattedOrFree(
     withSymbol: Boolean = true,
     free: String = "free"

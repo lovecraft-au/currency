@@ -26,9 +26,3 @@ actual fun CurrencyAmount.formatted(
         formattedValue
     }
 }
-
-internal actual fun Decimal.isValidAsCurrencyAmount(): Boolean {
-    // Zero is a valid currency amount
-    if (this.compareTo(Decimal.Companion.Zero) == 0) return true
-    return isValidAsCurrencyAmountCommon()
-}

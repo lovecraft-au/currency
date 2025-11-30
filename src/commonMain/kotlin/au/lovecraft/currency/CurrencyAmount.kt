@@ -4,15 +4,18 @@ import au.lovecraft.math.decimal.Decimal
 import au.lovecraft.math.decimal.Percent
 import au.lovecraft.math.decimal.Rounding
 import kotlin.jvm.JvmInline
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 @JvmInline
+@Serializable(with = CurrencyAmountAsStringSerializer::class)
 value class CurrencyAmount private constructor(val decimal: Decimal): Comparable<CurrencyAmount> {
-
-  init {
-    if (!decimal.isValidAsCurrencyAmount()) {
-      error("This ${Decimal::class.simpleName} is invalid as a ${CurrencyAmount::class.simpleName}: $decimal")
-    }
-  }
 
   fun toCents(): ULong = decimal.movePointRight(2).truncate().toULong()
 
@@ -46,7 +49,10 @@ value class CurrencyAmount private constructor(val decimal: Decimal): Comparable
     fun fromDecimal(decimal: Decimal): CurrencyAmount = CurrencyAmount(decimal.rounded(2, Rounding.HalfEven))
 
     /**
-     * Coerce to CurrencyAmount via `fromDecimal`
+     * Coerce to CurrencyAmount via `fromDecimal`.
+     *
+     * Note: The input must NOT include any currency symbol; only a plain numeric value is supported
+     * (e.g. "12.34"). Use formatting helpers for symbols when displaying amounts.
      */
     fun fromString(valueString: String): CurrencyAmount? = Decimal.fromString(valueString)
       ?.let(Companion::fromDecimal)
@@ -71,3 +77,22 @@ infix operator fun Int.times(other: CurrencyAmount) = other * this
  */
 inline fun CurrencyAmount.mapDecimal(block: (Decimal) -> Decimal): CurrencyAmount =
   CurrencyAmount.fromDecimal(block(decimal))
+
+/**
+ * kotlinx.serialization serializer for CurrencyAmount that encodes/decodes as a JSON string
+ * using the CurrencyAmount.toString() representation and CurrencyAmount.fromString().
+ */
+object CurrencyAmountAsStringSerializer : KSerializer<CurrencyAmount> {
+  override val descriptor: SerialDescriptor =
+    PrimitiveSerialDescriptor("au.lovecraft.currency.CurrencyAmount", PrimitiveKind.STRING)
+
+  override fun serialize(encoder: Encoder, value: CurrencyAmount) {
+    encoder.encodeString(value.toString())
+  }
+
+  override fun deserialize(decoder: Decoder): CurrencyAmount {
+    val s = decoder.decodeString()
+    return CurrencyAmount.fromString(s)
+      ?: throw SerializationException("Invalid CurrencyAmount string: '$s'")
+  }
+}

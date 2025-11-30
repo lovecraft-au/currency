@@ -17,6 +17,9 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
+        if (System.getenv("GITHUB_ACTIONS") != "true") {
+            mavenLocal()
+        }
         google {
             mavenContent {
                 includeGroupAndSubgroups("androidx")

@@ -19,6 +19,3 @@ actual fun CurrencyAmount.formatted(
   }
   return requireNotNull(formatter.stringFromNumber(roundedNumber.value))
 }
-
-internal actual fun Decimal.isValidAsCurrencyAmount(): Boolean =
-  isValidAsCurrencyAmountCommon() && !value.isEqualToNumber(NSDecimalNumber.notANumber)
