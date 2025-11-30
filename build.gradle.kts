@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlin.multiplatform.android.library)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.palantirGitVersion)
     alias(libs.plugins.maven.central.publish)
     id("maven-publish")
@@ -54,6 +55,7 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.serialization.json)
         }
         val jvmCommonMain by creating {
             dependsOn(commonMain.get())
@@ -72,14 +74,6 @@ kotlin {
         }
         iosSimulatorArm64Main {
             dependsOn(iosMain.get())
-        }
-        wasmJsMain.dependencies {
-            implementation(
-                dependencyNotation = npm(
-                    name = "decimal.js",
-                    version = libs.versions.decimal.js.get()
-                )
-            )
         }
     }
 }
